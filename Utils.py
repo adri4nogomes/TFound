@@ -9,7 +9,6 @@ from Bio import SeqIO
 from numba import jit
 import pandas as pd
 import numpy as np
-import progressbar
 import random
 import os
 
