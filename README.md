@@ -11,6 +11,6 @@ TFound provides a simple visualization of possible co-locations between TFs, gen
     <li>BeautifulSoup4 (https://www.crummy.com/software/BeautifulSoup/bs4/doc/);</li>
     <li>Numba (http://numba.pydata.org/numba-doc/0.13/install.html).</li>
   </ul>
-  <li>Run DbCreate.py to download the PWMs from YeTFaSCo and TF information from yeastgenome.org to create the database.</li>
+  <li>Run DbCreator.py to download the PWMs from YeTFaSCo and TF information from yeastgenome.org to create the database.</li>
   <li>Run InterfaceView.py</li>
 </ul>
