@@ -3,13 +3,14 @@ TFound provides a simple visualization of possible co-locations between TFs, gen
 
 ## Instalation
 <ul>
+  <li>Install Conda (https://conda.io/docs/user-guide/install/index.html)</li>
   <li>Install dependencies:</li>
   <ul>
-    <li>Pandas (https://pandas.pydata.org/pandas-docs/stable/install.html);</li>
-    <li>Numpy (https://docs.scipy.org/doc/numpy-1.15.1/user/install.html);</li>
-    <li>MatPlotLib (https://matplotlib.org/users/installing.html);</li>
-    <li>BeautifulSoup4 (https://www.crummy.com/software/BeautifulSoup/bs4/doc/);</li>
-    <li>Numba (http://numba.pydata.org/numba-doc/0.13/install.html).</li>
+    <li>BeautifulSoup4 (conda install beautifulsoup4);</li>
+    <li>Numpy (conda install numpy);</li>
+    <li>Pandas (conda install pandas);</li>
+    <li>MatPlotLib (conda install matplotlib);</li>
+    <li>Numba (conda install numba).</li>
   </ul>
   <li>Run DbCreator.py to download the PWMs from YeTFaSCo and TF information from yeastgenome.org to create the database.</li>
   <li>Run InterfaceView.py</li>
