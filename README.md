@@ -14,7 +14,7 @@ TFound provides a simple visualization of possible co-locations between TFs, gen
 ## Instalation
 <ul>
   <li>Install Conda (https://conda.io/docs/user-guide/install/index.html)</li>
-  <li>Run: <i>conda install -y beautifulsoup4 numpy pandas matplotlib numba biopython</i>
-  <li>Run: <i>python3 DbCreator.py</i> (to download the PWMs from YeTFaSCo and TF information from yeastgenome.org to create the database.)</li>
-  <li>Run: <i>python3 InterfaceView.py</i></li>
+  <li>Run: <u><i>conda install -y beautifulsoup4 numpy pandas matplotlib numba biopython</i></u><br> (to download all dependencies.)
+  <li>Run: <u><i>python3 DbCreator.py</i></u><br> (to download the PWMs from YeTFaSCo and TF information from yeastgenome.org to create the database.)</li>
+  <li>Run: <u><i>python3 InterfaceView.py</i></u></li>
 </ul>
