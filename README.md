@@ -5,7 +5,7 @@
 
 ### Prerequisites
 <p>Download and install Conda (https://conda.io/docs/user-guide/install/index.html)</p>
-<p>Download all dependencies:</p>
+<p>Install dependencies:</p>
 <pre><code>conda install -y beautifulsoup4 numpy pandas matplotlib numba biopython</code></pre>
 
 ### Instalation
