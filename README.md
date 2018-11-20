@@ -9,15 +9,13 @@
 ### Prerequisites
 <ul>
   <li>Install Conda (https://conda.io/docs/user-guide/install/index.html)</li>
-  <li>Install dependencies:
-  <pre><code>conda install -y beautifulsoup4 numpy pandas matplotlib numba biopython</code></pre></li>
+  <li>Run <code>conda install -y beautifulsoup4 numpy pandas matplotlib numba biopython</code> to install all dependencies.</li>
 </ul>
 
 ### Instalation
 <ul>
-  <li>Clone this repo to your local machine using</li>
-  <li><p>Download the PWMs from YeTFaSCo and TF information from yeastgenome.org to create the database:</p>
-  <pre><code>python3 DbCreator.py</code></pre></li>
+  <li>Clone this repo to your local machine.</li>
+  <li><p>Run <code>python3 DbCreator.py</code> to download the PWMs from YeTFaSCo and TF information from yeastgenome.org to create the database.</p></li>
 </ul>
 
 ## Running
@@ -25,8 +23,6 @@
 
 ## Author
 <ul>
-  <li><p><b>Adriano Gomes Silva</b></p></li>
+  <li><p><b>Adriano Gomes Silva </b> - <a href="http://silvarochar.wixsite.com/ssbl">Systems and Synthetic Biology Group </a></p></li>
 </ul>
-
-## License
 
