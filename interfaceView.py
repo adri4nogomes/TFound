@@ -1,3 +1,4 @@
+import os
 import csv
 import matplotlib
 import DbUtils as dbu
@@ -18,24 +19,36 @@ import matplotlib as mpl
 import canvasSequence as cs
 import canvasPosition as cp
 import Utils
-import DbCreator as dbc
 from tkinter import messagebox
 from tkinter import filedialog
 from matplotlib.figure import Figure
 from tkinter.scrolledtext import ScrolledText
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+import platform
+from win32api import GetMonitorInfo, MonitorFromPoint
 
 #entrada: bd pronto ou gerar bd com nome e adicionar
 class InterfaceView():
     def __init__(self):
+        self.OS = platform.system()
         self.master = Tk()
-        self.master.title("Score Display")
-        self.master.geometry('1080x700')
-        #self.master.resizable(0,0)
+        self.master.title("TFound")
+
         #self.master.wm_iconbitmap(“endereço.ico”)
+        self.master.minsize(1024, 600)
+
+        #print(self.master.state())
+        #self.master.geometry("1024x720")
+        #self.master.wm_state('zoomed')
+        '''if(self.OS=="Windows"):
+            monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
+            work_area = monitor_info.get("Work")
+            self.master.geometry("{}x{}".format(work_area[2],work_area[3]))'''
+        # fonts for all widgets
+        self.master.option_add("*Font", "arial 9")
 
         #Menu de opções
-        self.fmenu = Frame(self.master, width=380)
+        self.fmenu = Frame(self.master, width=400)
 
         self.fcontainer = ttk.Notebook(self.fmenu)
 
@@ -52,15 +65,15 @@ class InterfaceView():
         self.regulator = ttk.Combobox(self.fsacOpt, state="readonly", width=14)
         self.regulator.pack(side=LEFT,padx=(0,5))
 
-        self.fsacOpt.pack(side=TOP, fill=X, expand=YES, pady=3)
+        self.fsacOpt.pack(side=TOP, fill=X, expand=YES)
         self.fstree = Frame(self.fsac)
-        self.sactree = ttk.Treeview(self.fstree,height=8)
+        self.sactree = ttk.Treeview(self.fstree,height=7)
         self.sactree['show'] = 'headings' # remover primeira coluna vazia
         self.sactree["columns"]=("gene","sequence")
         self.sactree.column("gene", width=20, anchor='center')
         self.sactree.heading("gene", text="Gene")
         self.sactree.heading("sequence", text="Sequence")
-        self.sbar1= Scrollbar(self.fstree, orient='vertical', command=self.sactree.yview)
+        self.sbar1= Scrollbar(self.fstree, orient='vertical', command=self.sactree.yview, width=10)
         self.sactree.configure(yscroll=self.sbar1.set)
         self.sbar1.pack(side=RIGHT, fill=Y)
         self.sactree.pack(side=TOP, fill=BOTH, expand=YES)
@@ -69,7 +82,7 @@ class InterfaceView():
         self.fsave = Frame(self.fsac)
         self.lgenes = Label(self.fsave, text = "")
         self.lgenes.pack(side=LEFT)
-        Button(self.fsave, text="Export", command=self.saveFile).pack(side=RIGHT, padx=2, pady=2)
+        Button(self.fsave, text="Export", command=self.saveFile).pack(side=RIGHT, padx=2)
         self.fsave.pack(side=TOP, fil=X)
 
         self.fsOptions = Frame(self.fsac)
@@ -85,13 +98,13 @@ class InterfaceView():
         self.sfgState = BooleanVar()
         self.sfg = Checkbutton(self.fsOptions, text = "Full gene", variable=self.sfgState, command=self.fullGene)
         self.sfg.pack(side=LEFT)
-        self.fsOptions.pack(side=TOP, fill=X, expand=YES, padx=2, pady=2)
+        self.fsOptions.pack(side=TOP, fill=X, expand=YES, padx=2)
         self.fsac.pack(side=TOP, fill=X)
 
         # Sequências
         self.page2 = ttk.Frame(self.fcontainer)
         self.fsequences = Frame(self.page2)
-        self.sequence = ScrolledText(self.fsequences, height=15)
+        self.sequence = ScrolledText(self.fsequences, height=16)
         self.sequence.insert(END, '')
         self.sequence.pack(side=TOP, fill=X, expand=YES)
         self.fsequences.pack(side=TOP, fill=X)
@@ -100,7 +113,7 @@ class InterfaceView():
         self.page4 = ttk.Frame(self.fcontainer)
         self.ffasta = Frame(self.page4)
         self.ffile = Frame(self.ffasta)
-        Button(self.ffile, text="Load File", command=self.loadFile).pack(side=LEFT, padx=2, pady=2)
+        Button(self.ffile, text="Load File", command=self.loadFile).pack(side=LEFT, padx=2)
         self.filePath = Label(self.ffile, text = "")
         self.filePath.pack(side=LEFT)
         self.ffile.pack(side=TOP, fill=X)
@@ -108,33 +121,30 @@ class InterfaceView():
         Label(self.fseq, text = "Search:").pack(side=LEFT)
         self.seqSearch=Entry(self.fseq,textvariable=ssv)
         self.seqSearch.pack(side=LEFT)
-
-        #self.confidence['values'] = self.DBs['ExpertConfidence'].loc[self.DBs['Database']==self.dbbox.get()].tolist()
-        self.fseq.pack(side=TOP, fill=X, expand=YES, pady=3)
+        self.lgenesF = Label(self.fseq, text = "")
+        self.lgenesF.pack(side=RIGHT)
+        self.fseq.pack(side=TOP, fill=X, expand=YES)
         self.ffastatree = Frame(self.ffasta)
-        self.seqtree1 = ttk.Treeview(self.ffastatree,height=5)
+        self.seqtree1 = ttk.Treeview(self.ffastatree,height=6)
         self.seqtree1['show'] = 'headings' # remover primeira coluna vazia
         self.seqtree1["columns"]=("name","sequence")
         self.seqtree1.column("name", width=20, anchor='center')
         self.seqtree1.heading("name", text="Name")
         self.seqtree1.heading("sequence", text="Sequence")
-        self.bar1= Scrollbar(self.ffastatree, orient='vertical', command=self.seqtree1.yview)
+        self.bar1= Scrollbar(self.ffastatree, orient='vertical', command=self.seqtree1.yview, width=10)
         self.seqtree1.configure(yscroll=self.bar1.set)
         self.bar1.pack(side=RIGHT, fill=Y)
         self.seqtree1.pack(side=TOP, fill=BOTH, expand=YES)
-        self.ffastatree.pack(side=TOP,fil=X,expand=YES)
+        self.ffastatree.pack(side=TOP,fil=X,expand=YES,padx=(0,10))
 
         self.fsaveF = Frame(self.ffasta)
-        self.lgenesF = Label(self.fsaveF, text = "")
-        self.lgenesF.pack(side=LEFT)
-        Button(self.fsaveF, text="Export", command=self.saveFile).pack(side=RIGHT, padx=2, pady=2)
+        Button(self.fsaveF, text="Load GFF", command=self.loadGFF).pack(side=LEFT, padx=2)
+        self.filePathGFF = Label(self.fsaveF, text = "") #Manter opções desabilitadas enquanto estiver vazio
+        self.filePathGFF.pack(side=LEFT)
+        Button(self.fsaveF, text="Export", command=self.saveFile).pack(side=RIGHT, padx=2)
         self.fsaveF.pack(side=TOP, fill=X)
 
-        self.fgLoad = Frame(self.ffasta)
-        Button(self.fgLoad, text="Load GFF", command=self.loadGFF).pack(side=LEFT, padx=2, pady=2)
-        self.filePathGFF = Label(self.fgLoad, text = "") #Manter opções desabilitadas enquanto estiver vazio
-        self.filePathGFF.pack(side=LEFT)
-        self.fgLoad.pack(side=TOP, fill=X, expand=YES)
+
         self.fgOptions = Frame(self.ffasta)
         Label(self.fgOptions, text = "Upstream (bp):").pack(side=LEFT)
         self.upstream=Entry(self.fgOptions, width=6, validate="all", validatecommand=self.vint)
@@ -148,7 +158,7 @@ class InterfaceView():
         self.fg = Checkbutton(self.fgOptions, text = "Full gene", variable=self.fgState, command=self.fullGene)
         self.fg.pack(side=LEFT)
 
-        self.fgOptions.pack(side=TOP, fill=X, expand=YES, padx=2, pady=2)
+        self.fgOptions.pack(side=TOP, fill=X, expand=YES, padx=2)
         self.ffasta.pack(side=TOP, fill=X)
 
         self.fcontainer.add(self.page1, text='Saccharomyces cerevisiae')
@@ -158,7 +168,7 @@ class InterfaceView():
 
         self.fcontainer.pack(side=TOP, fill=X)
 
-        ttk.Separator(self.fmenu, orient="horizontal").pack(side=TOP, fill=X, pady=10)
+        ttk.Separator(self.fmenu, orient="horizontal").pack(side=TOP, fill=X, pady=3)
 
         #DB
         self.fdb = Frame(self.fmenu)
@@ -177,10 +187,10 @@ class InterfaceView():
         self.newdb=Entry(self.fnewdb, width=15)
         self.newdb.pack(side=LEFT)
         #Button Create New
-        Button(self.fnewdb, text="Create from files", command=self.createDB).pack(side=LEFT)
+        Button(self.fnewdb, text="Create", command=self.createDB).pack(side=LEFT)
         self.fnewdb.pack(side=TOP, fill=X)
 
-        ttk.Separator(self.fmenu, orient="horizontal").pack(side=TOP, fill=X, pady=10)
+        ttk.Separator(self.fmenu, orient="horizontal").pack(side=TOP, fill=X, pady=3)
         self.ftfs = Frame(self.fmenu)
 
 
@@ -217,20 +227,20 @@ class InterfaceView():
         self.search.pack(padx=(0,12))
         #self.box = ttk.Combobox(self.ftfs)
         #self.box.grid(row=2, sticky=E+W)
-        self.scrollbarAll = Scrollbar(self.f0)
+        self.scrollbarAll = Scrollbar(self.f0, width=10)
         self.scrollbarAll.pack(side=RIGHT, fill=Y)
         self.vAll = Variable()
-        self.lAll = Listbox(self.f0, height=7, width=25, yscrollcommand=self.scrollbarAll.set, listvariable=self.vAll)
+        self.lAll = Listbox(self.f0, height=5, width=25, yscrollcommand=self.scrollbarAll.set, listvariable=self.vAll)
         self.lAll.pack()
         self.scrollbarAll.config(command=self.lAll.yview)
         self.f0.grid(row=3, column=0, rowspan=5, sticky=E+W)
 
         Label(self.ftfs, text = "Targets:").grid(row=2, column=1, sticky=E+W)
         self.f1 = Frame(self.ftfs)
-        self.scrollbarTargets = Scrollbar(self.f1)
+        self.scrollbarTargets = Scrollbar(self.f1, width=10)
         self.scrollbarTargets.pack(side=RIGHT, fill=Y)
         self.vtargets = Variable()
-        self.ltargets = Listbox(self.f1, height=8, width=25, yscrollcommand=self.scrollbarTargets.set, listvariable=self.vtargets)
+        self.ltargets = Listbox(self.f1, height=6, width=25, yscrollcommand=self.scrollbarTargets.set, listvariable=self.vtargets)
         self.ltargets.pack()
         self.scrollbarTargets.config(command=self.ltargets.yview)
         self.f1.grid(row=3, column=1, rowspan=5, sticky=E+W)
@@ -244,7 +254,7 @@ class InterfaceView():
         Button(self.ftfs, text = "Score", command=self.Score).grid(row=11,  column=0, columnspan=2, sticky=E+W+S+N)
 
 
-        self.fmenu.pack(side=LEFT, fill=Y, padx=10, pady=10)
+        self.fmenu.pack(side=LEFT, fill=Y, padx=10, pady=3)
         self.fmenu.pack_propagate(0)
 
         #Opções extra
@@ -268,12 +278,11 @@ class InterfaceView():
 
         self.fviewSingle = Frame(self.fsingleOpt)
         self.fcSequence = Frame(self.fviewSingle)
-        self.ws = None
         self.fcSequence.pack(side=TOP, fill=X)
         self.fimg = Frame(self.fviewSingle)
-        self.widget = None
+        self.figure = None
         self.toolbar = None
-        self.fimg.pack(side=TOP, fill=BOTH)
+        self.fimg.pack(side=TOP, expand=True, fill=BOTH)
         self.fviewSingle.pack(side=TOP, fill=BOTH)
         self.fsingleOpt.pack(side=TOP, fill=BOTH)
 
@@ -286,7 +295,7 @@ class InterfaceView():
         self.ve.set(0)
         self.fmoopt.pack(side=TOP, fill=X)
         self.fviewMulti = Frame(self.fmultiOpt)
-        self.fviewMulti.pack(side=LEFT, fill=BOTH)
+        self.fviewMulti.pack(side=LEFT, fill=BOTH, expand=True)
         self.fmultiOpt.pack(side=TOP, fill=BOTH)
 
         self.fcontOptions.add(self.fsingleOpt, text='Single sequence')
@@ -298,6 +307,10 @@ class InterfaceView():
         self.confidence.bind("<<ComboboxSelected>>", self.updateAll)
         self.regulator.bind("<<ComboboxSelected>>", self.searchGenes)
 
+        self.fcSequence.bind("<Enter>", self._on_frame_focus)
+        self.fcSequence.bind("<Leave>", self._on_frame_lost_focus)
+        self.fviewMulti.bind("<Enter>", self._on_frame_focus)
+        self.fviewMulti.bind("<Leave>", self._on_frame_lost_focus)
 
         self.seq = None
         self.name = None
@@ -316,8 +329,35 @@ class InterfaceView():
         self.updateBox()
         self.master.mainloop() # após todas especificações da janela
 
-    def Score(self, event=None):
+    def _on_frame_focus(self, event):
+        if self.OS == "Linux" :
+            event.widget.bind_all('<4>', self._on_mousewheel, add="+")
+            event.widget.bind_all('<5>', self._on_mousewheel, add="+")
+        else: # Windows and MacOS
+            event.widget.bind_all("<MouseWheel>", self._on_mousewheel)
 
+    def _on_frame_lost_focus(self, event):
+        if self.OS == "Linux" :
+            event.widget.unbind_all('<4>')
+            event.widget.unbind_all('<5>')
+        else: # Windows and MacOS
+            event.widget.unbind_all("<MouseWheel>")
+
+    def _on_mousewheel(self, event):
+        delta=0
+        if self.OS == 'Linux':
+            delta = 2*event.num-9
+        elif self.OS == 'Windows':
+            delta = (-1)*int((event.delta/120))
+        elif self.OS == 'Darwin':
+            delta = event.delta
+
+        if(self.fcontOptions.index(self.fcontOptions.select())==0):
+            event.widget.xview_scroll(delta, "units")
+        else:
+            event.widget.yview_scroll(delta, "units")
+
+    def Score(self, event=None):
         # create new elements
         targets=[]
         for item in self.vtargets.get():
@@ -353,9 +393,11 @@ class InterfaceView():
         #chamar o canvas
         self.updateGenes()
         self.searchGenes()
+        square=self.master.winfo_height()-(self.fviewMulti.winfo_rooty()-self.master.winfo_rooty())
+        #self.fviewMulti.configure(height=square)
+        cp.canvasPosition(self.fviewMulti, 20, self.fmultiOpt.winfo_width(), 10, seqs=(self.genesTemp if(self.fcontainer.index(self.fcontainer.select())==0) else self.genesTempF),
+            targets=[self.targets,self.pmTargets], threshold=float(self.threshold.get()), exist=self.ve.get(), normalized=self.normalizedState.get(), height=square)
 
-        cp.canvasPosition(self.fviewMulti, 10, 630, 10, seqs=(self.genesTemp if(self.fcontainer.index(self.fcontainer.select())==0) else self.genesTempF),
-            targets=[self.targets,self.pmTargets], threshold=float(self.threshold.get()), exist=self.ve.get(), normalized=self.normalizedState.get())
     def flatten(self, L):
         for item in L:
             if(isinstance(item,list)):
@@ -365,8 +407,8 @@ class InterfaceView():
 
     def SingleScore(self, event=None):
         # remove old widgets
-        if self.widget:
-            self.widget.destroy()
+        if self.figure:
+            self.figure.destroy()
         if self.toolbar:
             self.toolbar.destroy()
         for widget in  self.fcSequence.winfo_children():
@@ -379,10 +421,12 @@ class InterfaceView():
             if(self.fcontainer.index(self.fcontainer.select())==1):
                 self.seq = self.sequence.get(1.0,END).rstrip() #rstrip remove quebras de linha #usar RE para verificar integridade da sequência
             elif(self.fcontainer.index(self.fcontainer.select())==2  and len(self.seqtree1.get_children())>0):
-                self.seq = self.seqtree1.item(self.seqtree1.selection())['values'][1]
+                #self.seq = self.seqtree1.item(self.seqtree1.selection())['values'][1]
                 self.name = str(self.seqtree1.item(self.seqtree1.selection())['values'][0])
+                self.updateGenes()
+                self.searchGenes()
+                self.seq = list(self.genesF.loc[self.genesF['gene']==self.name,'sequence'])[0]
             elif(self.fcontainer.index(self.fcontainer.select())==0  and len(self.sactree.get_children())>0):
-                #self.seq = self.sactree.item(self.sactree.selection())['values'][1]
                 self.name = str(self.sactree.item(self.sactree.selection())['values'][0])
                 self.updateGenes()
                 self.searchGenes()
@@ -390,19 +434,25 @@ class InterfaceView():
         except:
             self.dialog("Select a sequence.")
 
-        upstream,downstream=[int(self.supstream.get().strip()), -1 if(self.sfgState.get()) else int(self.sdownstream.get().strip())] if(self.fcontainer.index(self.fcontainer.select())==0) else ([int(self.upstream.get().strip()), -1 if(self.fgState.get()) else int(self.downstream.get().strip())] if(self.fcontainer.index(self.fcontainer.select())==2) else [len(self.seq),0])
+        upstream,downstream=[int(self.supstream.get().strip()), -1 if(self.sfgState.get()) else int(self.sdownstream.get().strip())] if(self.fcontainer.index(self.fcontainer.select())==0) else \
+            ([int(self.upstream.get().strip()), -1 if(self.fgState.get()) else int(self.downstream.get().strip())] if(self.fcontainer.index(self.fcontainer.select())==2) else [len(self.seq),0])
         if(self.seq is not None):
             cs.canvasSequence(self.seq, self.fcSequence, width=15, height=9, targets=[self.targets,self.pmTargets], outOfRange=self.foorState.get(),
                 normalized=self.normalizedState.get(), threshold=float(self.threshold.get()),upstream=upstream,downstream=downstream,margin=60)
             paralogs = dbu.getParalogs(list(self.targets.keys()), type="MotifID", EC=self.confidence.get(), Database=self.dbbox.get()) if(self.paralogState.get()) else []
             paralogs = list(self.flatten(paralogs))
+
+            self.master.update()
+            square=self.master.winfo_height()-(self.fimg.winfo_rooty()-self.master.winfo_rooty())
+
             plt = Utils.PlotAllScores(self.seq, outOfRange=self.foorState.get(), tfs=self.pmTargets+self.pmNonTargets,
                 principalOnly=not(self.allLablesState.get()), save=False, normalized=self.normalizedState.get(),
-                paralogs=paralogs, maximize=self.maximize, name=self.name)
+                paralogs=paralogs, maximize=self.maximize, name=self.name, dpi=self.master.winfo_fpixels('1i'),
+                square=square)
             canvas = FigureCanvasTkAgg(plt, self.fimg)
-            self.toolbar = NavigationToolbar2Tk(canvas, self.fimg)
-            self.widget = canvas.get_tk_widget()
-            self.widget.pack(fill=BOTH)
+            #self.toolbar = NavigationToolbar2Tk(canvas, self.fimg)
+            self.figure = canvas.get_tk_widget()
+            self.figure.pack(fill=None)
 
     def dialog(self,msg):
         messagebox.showinfo("Alerta!" , msg)
@@ -412,7 +462,6 @@ class InterfaceView():
         self.lparalogs.config(text='Paralogs = {}')
 
     def updateAll(self, event=None):
-
         targets = []
         for item in self.vtargets.get():
             aux = item[item.find("(")+1:item.find(")")]
@@ -434,44 +483,48 @@ class InterfaceView():
     def updateSBAll(self, event=None):
         self.lAll.delete(0,END)
         search = self.search.get().strip().upper()
-        for item in sorted(["{}/{} ({})".format(pm.StandardName,pm.SystematicName,pm.MotifID) for pm in self.pms if pm.EC==self.confidence.get() or self.confidence.get()=="All"  if (search in pm.StandardName.upper() or search in str(pm.MotifID) or search=="")]):
+        for item in sorted(["{}/{} ({})".format(pm.StandardName,pm.SystematicName,pm.MotifID) for pm in self.pms if pm.EC==self.confidence.get()
+            or self.confidence.get()=="All"  if (search in pm.StandardName.upper() or search in pm.SystematicName.upper() or search in str(pm.MotifID) or search=="")]):
             self.lAll.insert(END, item)
 
     def addTF(self, orientation):
-        item = self.lAll.get(self.lAll.curselection())
+        try:
+            item = self.lAll.get(self.lAll.curselection())
 
-        x = item.split(" ")
-        exist = False
-        targets = []
-        for target in self.vtargets.get():
-            z = target.split(" ")
-            if(x[0]==z[0] and x[1]==z[1] and orientation==z[2]):
-                exist=True
+            x = item.split(" ")
+            exist = False
+            targets = []
+            for target in self.vtargets.get():
+                z = target.split(" ")
+                if(x[0]==z[0] and x[1]==z[1] and orientation==z[2]):
+                    exist=True
 
-        if(not exist):
-            aux = item[item.find("(")+1:item.find(")")]
-            targets.append(int(aux) if aux!="None" else item.split("/")[0])
-            if(orientation=="+"):
-                self.ltargets.insert(END, item+" +")
-            elif(orientation=="-"):
-                self.ltargets.insert(END, item+" -")
+            if(not exist):
+                aux = item[item.find("(")+1:item.find(")")]
+                targets.append(int(aux) if aux!="None" else item.split("/")[0])
+                if(orientation=="+"):
+                    self.ltargets.insert(END, item+" +")
+                elif(orientation=="-"):
+                    self.ltargets.insert(END, item+" -")
 
-        self.lparalogs.config(text='')
-        paralogs = [x for x in dbu.getParalogs(targets, type="Order",EC=self.confidence.get(), Database=self.dbbox.get()) if x!=None]
-        aux = []
-        if(paralogs!=[]):
-            if(any(isinstance(i, list) for i in paralogs)):
-                paralogs = [item for sublist in paralogs for item in sublist]
-            for item in set(paralogs):
-                if item not in targets:
-                    aux.append(item)
-        self.lparalogs.config(text="Paralogs: {"+', '.join(sorted(aux))+"}")
+            self.lparalogs.config(text='')
+            paralogs = [x for x in dbu.getParalogs(targets, type="Order",EC=self.confidence.get(), Database=self.dbbox.get()) if x!=None]
+            aux = []
+            if(paralogs!=[]):
+                if(any(isinstance(i, list) for i in paralogs)):
+                    paralogs = [item for sublist in paralogs for item in sublist]
+                for item in set(paralogs):
+                    if item not in targets:
+                        aux.append(item)
+            self.lparalogs.config(text="Paralogs: {"+', '.join(sorted(aux))+"}")
+        except:
+            pass
 
     def removeTarget(self):
-        selection = self.ltargets.curselection()
-        self.ltargets.delete(selection[0])
-
         try:
+            selection = self.ltargets.curselection()
+            self.ltargets.delete(selection[0])
+
             targets = []
             for item in self.vtargets.get():
                 target = int(item[item.find("(")+1:item.find(")")])
@@ -549,7 +602,7 @@ class InterfaceView():
                     i=0
                     for record in SeqIO.parse(handle, "fasta"):
                         genes.append([record.description, str(record.seq), len(record.seq), 0])
-                        self.seqtree1.insert("", i, iid=str(i), values=(record.description,record.seq))
+                        self.seqtree1.insert("", i, iid=str(i), values=(record.description,(str(record.seq)[:30]+"..." if len(str(record.seq))>33 else record.seq)))
                         i+=1
                     self.seqtree1.selection_set("0")
                 self.genesF = pd.DataFrame(genes, columns=["gene", "sequence", "upstream", "downstream"])
@@ -565,7 +618,7 @@ class InterfaceView():
         except:
             self.confidence.current(self.DBs['ExpertConfidence'].loc[self.DBs['Database']==self.dbbox.get()].tolist().index(None))
         self.lAll.delete(0,END)
-        self.pms = dbu.getAll(EC=self.confidence.get(), Database=self.dbbox.get())
+        self.pms = dbu.getAll(Database=self.dbbox.get())
         self.pmTargets = []
         for item in sorted(["{}/{} ({})".format(pm.StandardName,pm.SystematicName,pm.MotifID) for pm in self.pms if pm.EC==self.confidence.get() or self.confidence.get()=="All"]):
             self.lAll.insert(END, item)
@@ -599,10 +652,10 @@ class InterfaceView():
 
     def updateGenes(self, event=None):
         if(self.fcontainer.index(self.fcontainer.select())==2 and self.genomeF!=None):
-                upstream = int(self.upstream.get().strip())
-                downstream = int(self.downstream.get().strip())
-                self.genesF = Utils.getSequences(self.genomeF[0], self.genomeF[1], upstream, -1 if(self.fgState.get()) else downstream)
-                #pegar genes do FASTA
+            upstream = int(self.upstream.get().strip())
+            downstream = int(self.downstream.get().strip())
+            self.genesF = Utils.getSequences(self.genomeF[0], self.genomeF[1], upstream, -1 if(self.fgState.get()) else downstream)
+        #pegar genes do FASTA
         if(self.fcontainer.index(self.fcontainer.select())==0):
             upstream = int(self.supstream.get().strip())
             downstream = int(self.sdownstream.get().strip())
@@ -621,7 +674,7 @@ class InterfaceView():
                 up = self.genesF.iloc[i,2]
                 down = self.genesF.iloc[i,3]
                 if(search in name.upper() or search==""):
-                    self.seqtree1.insert("", i, iid=str(k), values=(name,sequence))
+                    self.seqtree1.insert("", i, iid=str(k), values=(name,(sequence[:30]+"..." if len(sequence)>33 else sequence)))
                     genesTemp.append([name, sequence,up,down])
                     k+=1
             self.genesTempF = pd.DataFrame(genesTemp, columns=["gene", "sequence", "upstream", "downstream"])
@@ -642,8 +695,9 @@ class InterfaceView():
                 sequence = self.genes.iloc[i,1]
                 up = self.genes.iloc[i,2]
                 down = self.genes.iloc[i,3]
-                if(targets is None or name in targets['TargetSys'].tolist() or name in targets['TargetStd'].tolist()) and (search in name.upper() or search==""): # or search in sequence):
-                        self.sactree.insert("", i, iid=str(k), values=(name,sequence))
+                if(targets is None or name in targets['TargetSys'].tolist() or name in targets['TargetStd'].tolist()) \
+                    and (search in name.upper() or search==""): # or search in sequence):
+                        self.sactree.insert("", i, iid=str(k), values=(name,(sequence[:30]+"..." if len(sequence)>33 else sequence)))
                         genesTemp.append([name, sequence,up,down])
                         k+=1
             self.genesTemp = pd.DataFrame(genesTemp, columns=["gene", "sequence", "upstream", "downstream"])
@@ -694,4 +748,8 @@ class InterfaceView():
                 return False
         elif(type=="DNA"):
             return (S in 'actgnxACTGNX')
-test = InterfaceView()
+
+if __name__ == '__main__':
+    if(not os.path.isfile("TF.db")):
+        dbc.main()
+    InterfaceView()

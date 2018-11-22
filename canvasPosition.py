@@ -41,9 +41,9 @@ COLORS = ['dark slate gray', 'dim gray', 'slate gray',
 'purple4', 'MediumPurple1', 'MediumPurple4', 'thistle1', 'thistle4']
 
 class canvasPosition():
-    def __init__(self, frame, margin, width, rad, seqs, targets, threshold, exist, normalized=True):
+    def __init__(self, frame, margin, width, rad, seqs, targets, threshold, exist, normalized=True, height=0):
         self.margin = margin
-        self.width = width
+        self.width = width - 16 #-scrollbar
         self.rad = rad
         self.targets = targets[0]
         self.seqs = seqs
@@ -53,17 +53,11 @@ class canvasPosition():
         self.normalized=normalized
 
         self.position = Frame(frame)
-
-        '''self.score = Frame(self.position, height=300)
-        self.widget = None
-        self.toolbar = None
-        self.score.pack(side=TOP, fill=X)'''
-
         self.canvas = Canvas(self.position, bg='white')
-        hbar=Scrollbar(self.position, orient=VERTICAL)
-        hbar.pack(side=RIGHT, fill=Y)
-        hbar.config(command=self.canvas.yview)
-        self.canvas.config(yscrollcommand=hbar.set)
+        bar=Scrollbar(self.position, orient=VERTICAL)
+        bar.pack(side=RIGHT, fill=Y)
+        bar.config(command=self.canvas.yview, width=10)
+        self.canvas.config(yscrollcommand=bar.set)
         self.canvas.pack(side=LEFT, expand=True, fill=BOTH)
         self.position.pack(side=TOP,fill=BOTH, expand=True)
         #criar círculos principais
@@ -75,7 +69,7 @@ class canvasPosition():
         #criar régua
         self.scalarLine(x,y,maxUp,maxDown)
 
-        self.canvas.config(width=self.width+2*self.margin,height=y+3*self.rad)
+        self.canvas.config(width=self.width,height=y+3*self.rad if height==0 else height)
         self.canvas.config(scrollregion=(0,0,0,y+3*self.rad))
 
     def circles(self):
@@ -87,12 +81,15 @@ class canvasPosition():
         colors = [None]
         if(len(tfs)>=1):
             colors = random.sample(COLORS, len(tfs))
-        x=self.margin+self.rad
-        y=self.margin+3*self.rad
-        for i in range(len(tfs)):
-            x,y = self.circle(x,y,colors[i],list(self.targets.values())[i],tfs[i].StandardName)
-            x+=3*self.rad
-        return [y+3*self.rad,colors]
+        x=self.margin
+        y=self.margin
+        if(len(tfs)>0):
+            for i in range(len(tfs)):
+                x,y = self.circle(x,y,colors[i],list(self.targets.values())[i],tfs[i].StandardName)
+                x+=3*self.rad
+            return [y+3*self.rad,colors]
+        return [y,colors]
+
 
     def circle(self, x, y, color, type, title=None, mini=False):
         xf, yf = [x, y]
@@ -101,16 +98,16 @@ class canvasPosition():
         text_item = None
         if(title!=None):
             while(True):
-                text_item = self.canvas.create_text(x+1.5*r,y,text=title, anchor=W, fill="black", font=('Helvetica', -(r*2), 'bold'))
+                text_item = self.canvas.create_text(x+1.5*r,y,text=title, anchor=W, fill="black", font=('Arial', -(r*2), 'bold'))
                 bbox = self.canvas.bbox(text_item)
-                if(bbox[2]<self.width):
+                if(bbox[2]<self.width-self.margin):
                     xf=bbox[2]
                     yf=y
                     break
                 else:
                     self.canvas.delete(text_item)
                     x=self.margin
-                    y+=self.margin+3*self.rad
+                    y+=self.margin+1*self.rad
                     text_item = None
 
         if(not mini):
@@ -126,9 +123,10 @@ class canvasPosition():
         maxName = max(len(x) for x in self.seqs.loc[:,'gene'])
         x = (maxName+4)*self.rad
         total = self.width-self.margin-x
+        nseq = 0
 
-        fig = mpl.figure.Figure(figsize=(1, 1))
-        ax = fig.add_axes([0, 0, 1, 1])
+        #fig = mpl.figure.Figure(figsize=(1, 1))
+        #ax = fig.add_axes([0, 0, 1, 1])
         concatScoreS = None
         concatScoreA = None
         for seq in range(len(self.seqs)):
@@ -140,20 +138,21 @@ class canvasPosition():
                     scoresS[i] = Utils.getScorePostion(self.seqs.iloc[seq,1],self.tfs[i], self.threshold, self.normalized, outOfRange=False, reversePosition=False)
                     exist[i] = False if scoresS[i].size==0 else True
 
-
                 if(list(self.targets.values())[i] in [0,2]):
                     scoresA[i] = Utils.getScorePostion(self.seqs.iloc[seq,1],self.tfs[i], self.threshold, self.normalized, outOfRange=False, reversePosition=True)
                     exist[i+len(self.tfs)] = False if scoresA[i].size==0 else True
 
-
                 exist[i+len(self.tfs)] = exist[i] if(list(self.targets.values())[i]==1) else exist[i+len(self.tfs)]
                 exist[i] = exist[i+len(self.tfs)] if(list(self.targets.values())[i]==0) else exist[i]
 
-
             if(self.exist==0 or (self.exist==1 and any(exist)) or (self.exist==2 and all(exist))):
+                nseq+=1
                 f = tk.font.Font(size=-2*self.rad, weight='bold', underline=(1 if(underline) else 0))
                 self.canvas.create_text(self.rad,y,text=self.seqs.iloc[seq,0], anchor=W, fill="black", font=f)
-                self.canvas.create_line(x, y, self.width-self.margin, y, fill='#7F7F7F', width=2, arrow=tk.LAST, capstyle=tk.ROUND)
+
+                upstream = self.seqs.iloc[seq,2]
+                downstream = self.seqs.iloc[seq,3]
+                self.canvas.create_line(x+(self.width-self.margin-x)*((maxUp-upstream)/fullLen), y, x+(self.width-self.margin-x)*((maxUp+downstream)/fullLen), y, fill='#7F7F7F', width=2, arrow=tk.LAST, capstyle=tk.ROUND)
                 if(maxDown>0):
                     self.transversal(self.width-self.margin-total*(maxDown/fullLen), y)
                 for i in range(len(self.tfs)):
@@ -164,28 +163,7 @@ class canvasPosition():
                         for s in scoresA[i]:
                             self.circle(x+total*(int(s[1])/fullLen), y, color=colors[i], type=0, mini=True)
                 y+=3*self.rad
-
-        '''for i in range(len(self.tfs)):
-            if(scoresS[i] is not None):
-                for s in scoresS[i]:
-                    self.circle(x+total*(int(s[1])/fullLen), y, color=colors[i], type=1, mini=True)
-                bins = np.linspace(self.threshold, 1, 50) if(self.normalized) else np.linspace(self.threshold, self.tfs[i].getBestMotif(first=True)[1], 100)
-                ax.hist(scoresS[i], bins, alpha=0.5, label=self.tfs[i].SystematicName)
-            if(scoresA[i] is not None):
-                for s in scoresA[i]:
-                    self.circle(x+total*(int(s[1])/fullLen), y, color=colors[i], type=0, mini=True)
-                bins = np.linspace(self.threshold, 1, 50) if(self.normalized) else np.linspace(self.threshold, self.tfs[i].getBestMotif(first=True)[1], 100)
-                ax.hist(scoresA[i], bins, alpha=0.5, label=self.tfs[i].SystematicName+"''")
-        ax.set_xlabel('Scores')
-        ax.set_ylabel('Frequency')
-        ax.set_title('Histogram of Scores')
-        #ax.legend(loc='upper left')
-        #ax.show()
-        canvas = FigureCanvasTkAgg(fig, self.score)
-        self.toolbar = NavigationToolbar2Tk(canvas, self.score)
-        self.widget = canvas.get_tk_widget()
-        self.widget.pack(fill=BOTH)'''
-
+        self.canvas.create_text(self.rad,y,text=str(nseq)+" genes", anchor=W, fill="#7F7F7F", font=('Arial', -(int(self.rad*1.2)), 'bold'))
         return [x,y, maxUp, maxDown]
 
     def scalarLine(self,x, y, upstream, downstream, interv=5, tam=10):
@@ -202,4 +180,4 @@ class canvasPosition():
     def transversal(self, x, y, text=None):
         self.canvas.create_line(x, y+5, x, y-5, fill='#7F7F7F', width=2, capstyle=tk.ROUND)
         if(text!=None):
-            self.canvas.create_text(x, y+10, text=text, anchor=N, fill="#7F7F7F", font=('Helvetica', -(int(self.rad*1.5)), 'bold'))
+            self.canvas.create_text(x, y+10, text=text, anchor=N, fill="#7F7F7F", font=('Arial', -(int(self.rad*1.2)), 'bold'))

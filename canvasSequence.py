@@ -53,11 +53,11 @@ class canvasSequence():
         self.margin = margin
 
         self.canvas = Canvas(frame, scrollregion=(0,0,len(self.seq)*width+2*margin,0),bg="white")
-        hbar=Scrollbar(frame, orient=HORIZONTAL)
-        hbar.pack(side=TOP, fill=X)
-        hbar.config(command=self.canvas.xview)
+        bar=Scrollbar(frame, orient=HORIZONTAL)
+        bar.pack(side=TOP, fill=X)
+        bar.config(command=self.canvas.xview, width=10)
         self.canvas.config(width=500,height=height+5.5*width+5*width/5)
-        self.canvas.config(xscrollcommand=hbar.set)
+        self.canvas.config(xscrollcommand=bar.set)
         self.canvas.pack(side=LEFT, expand=True, fill=BOTH)
 
         self.sequence(seq)

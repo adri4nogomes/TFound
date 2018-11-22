@@ -42,7 +42,11 @@ def getAnnotation(file):
 def getSequences(genome, gff, upstream, downstream=0):
     down = downstream
     gff = gff[gff.type == 'gene']
-    Names = [gff.iloc[i,8].split(";")[2].split("=")[1] for i in range(len(gff))]
+    Names = None
+    try: #genes
+        Names = [gff.iloc[i,8].split(";")[2].split("=")[1] for i in range(len(gff))]
+    except:
+        Names = [gff.iloc[i,8].split(";")[0].split("=")[1] for i in range(len(gff))]
     columns = ["gene", "sequence", "upstream", "downstream"]
     table=[]
     for i in range(len(gff)):
@@ -128,7 +132,7 @@ def getOutputName(output):
 def get_cmap(n, name='hsv'):
     return plt.cm.get_cmap(name, n)
 
-def PlotAllScores(sequence, tfs=[], outOfRange=False, principalOnly=False, margin=0, output=None, save=True, normalized=True, paralogs=[], maximize=[], name=None):
+def PlotAllScores(sequence, tfs=[], outOfRange=False, principalOnly=False, margin=0, output=None, save=True, normalized=True, paralogs=[], maximize=[], name=None, dpi=1, square=6):
     db = "TF.db"
     if(os.path.isfile(db)):
         tfs_stack = [np.vstack((tf.pm for tf in tfs)),[len(tf.pm) for tf in tfs]]#Pilha de tfs e tamanhos
@@ -162,7 +166,7 @@ def PlotAllScores(sequence, tfs=[], outOfRange=False, principalOnly=False, margi
             else:
                 points.loc[len(points)] = [tfs[i].StandardName, sense[i], anti[i], "B", tam] if(principalOnly==False) else ["", sense[i], anti[i], "B", tam]
 
-        fig = Figure(figsize=(6,6))
+        fig = Figure(figsize=(square/dpi,square/dpi), dpi=dpi)
         a = fig.add_subplot(111)
         a.scatter(points.loc[:,"Sense"], points.loc[:,"Anti-sense"], marker='.', c=points.loc[:,"Color"], cmap=plt.get_cmap('Spectral'), s=points.loc[:,"ExpertConfidence"])
 
