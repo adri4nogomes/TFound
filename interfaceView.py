@@ -25,7 +25,7 @@ from matplotlib.figure import Figure
 from tkinter.scrolledtext import ScrolledText
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import platform
-from win32api import GetMonitorInfo, MonitorFromPoint
+#from win32api import GetMonitorInfo, MonitorFromPoint
 
 #entrada: bd pronto ou gerar bd com nome e adicionar
 class InterfaceView():
@@ -138,7 +138,7 @@ class InterfaceView():
         self.ffastatree.pack(side=TOP,fil=X,expand=YES,padx=(0,10))
 
         self.fsaveF = Frame(self.ffasta)
-        Button(self.fsaveF, text="Load GFF", command=self.loadGFF).pack(side=LEFT, padx=2)
+        self.bload = Button(self.fsaveF, text="Load GFF", command=self.loadGFF)
         self.filePathGFF = Label(self.fsaveF, text = "") #Manter opções desabilitadas enquanto estiver vazio
         self.filePathGFF.pack(side=LEFT)
         Button(self.fsaveF, text="Export", command=self.saveFile).pack(side=RIGHT, padx=2)
@@ -158,7 +158,6 @@ class InterfaceView():
         self.fg = Checkbutton(self.fgOptions, text = "Full gene", variable=self.fgState, command=self.fullGene)
         self.fg.pack(side=LEFT)
 
-        self.fgOptions.pack(side=TOP, fill=X, expand=YES, padx=2)
         self.ffasta.pack(side=TOP, fill=X)
 
         self.fcontainer.add(self.page1, text='Saccharomyces cerevisiae')
@@ -344,18 +343,21 @@ class InterfaceView():
             event.widget.unbind_all("<MouseWheel>")
 
     def _on_mousewheel(self, event):
-        delta=0
-        if self.OS == 'Linux':
-            delta = 2*event.num-9
-        elif self.OS == 'Windows':
-            delta = (-1)*int((event.delta/120))
-        elif self.OS == 'Darwin':
-            delta = event.delta
+        try:
+            delta=0
+            if self.OS == 'Linux':
+                delta = 2*event.num-9
+            elif self.OS == 'Windows':
+                delta = (-1)*int((event.delta/120))
+            elif self.OS == 'Darwin':
+                delta = event.delta
 
-        if(self.fcontOptions.index(self.fcontOptions.select())==0):
-            event.widget.xview_scroll(delta, "units")
-        else:
-            event.widget.yview_scroll(delta, "units")
+            if(self.fcontOptions.index(self.fcontOptions.select())==0):
+                event.widget.xview_scroll(delta, "units")
+            else:
+                event.widget.yview_scroll(delta, "units")
+        except:
+            pass
 
     def Score(self, event=None):
         # create new elements
@@ -443,7 +445,7 @@ class InterfaceView():
             paralogs = list(self.flatten(paralogs))
 
             self.master.update()
-            square=self.master.winfo_height()-(self.fimg.winfo_rooty()-self.master.winfo_rooty())
+            square=min(self.master.winfo_height()-(self.fimg.winfo_rooty()-self.master.winfo_rooty()), self.master.winfo_width()-(self.fimg.winfo_rootx()-self.master.winfo_rootx()))
 
             plt = Utils.PlotAllScores(self.seq, outOfRange=self.foorState.get(), tfs=self.pmTargets+self.pmNonTargets,
                 principalOnly=not(self.allLablesState.get()), save=False, normalized=self.normalizedState.get(),
@@ -578,6 +580,8 @@ class InterfaceView():
         self.updateGenes()
         self.searchGenes()
 
+        self.fgOptions.pack(side=TOP, fill=X, expand=YES, padx=2)
+
     def loadFile(self):
         fileTypes = ("FASTA","*.fasta;*.fna;*.ffn")
 
@@ -608,6 +612,7 @@ class InterfaceView():
                 self.genesF = pd.DataFrame(genes, columns=["gene", "sequence", "upstream", "downstream"])
                 self.searchGenes()
                 self.fileNameF = fileName
+                self.bload.pack(side=LEFT, padx=2)
 
     def updateBox(self, event=None):
         self.DBs = dbu.getDBs()
