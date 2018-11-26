@@ -37,73 +37,76 @@ class InterfaceView():
         #self.master.wm_iconbitmap(“endereço.ico”)
         self.master.minsize(1024, 600)
 
-        #print(self.master.state())
-        #self.master.geometry("1024x720")
-        #self.master.wm_state('zoomed')
-        '''if(self.OS=="Windows"):
-            monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
-            work_area = monitor_info.get("Work")
-            self.master.geometry("{}x{}".format(work_area[2],work_area[3]))'''
+        s = ttk.Style()
+        if(self.OS=="Windows"):
+            s.theme_use('xpnative')
+        elif(self.OS=="Linux"):
+            s.theme_use('clam')
+        elif(self.OS=="Darwin"):
+            s.theme_use('aqua')
         # fonts for all widgets
         self.master.option_add("*Font", "arial 9")
 
         #Menu de opções
-        self.fmenu = Frame(self.master, width=400)
+        self.fmenu = ttk.Frame(self.master, width=400)
 
         self.fcontainer = ttk.Notebook(self.fmenu)
 
         #Saccharomyces cerevisiae
         self.page1 = ttk.Frame(self.fcontainer)
-        self.fsac = Frame(self.page1)
-        self.fsacOpt = Frame(self.fsac)
-        Label(self.fsacOpt, text = "Search:").pack(side=LEFT)
+        self.fsac = ttk.Frame(self.page1)
+        self.fsacOpt = ttk.Frame(self.fsac)
+        ttk.Label(self.fsacOpt, text = "Search:").pack(side=LEFT)
         ssv = StringVar()
         ssv.trace("w", lambda name, index, mode, ssv=ssv: self.searchGenes())
-        self.sacSearch=Entry(self.fsacOpt, textvariable=ssv)
+        self.sacSearch=ttk.Entry(self.fsacOpt, textvariable=ssv)
         self.sacSearch.pack(side=LEFT)
-        Label(self.fsacOpt, text = "Regulator:").pack(side=LEFT,padx=(5,0))
+        ttk.Label(self.fsacOpt, text = "Regulator:").pack(side=LEFT,padx=(5,0))
         self.regulator = ttk.Combobox(self.fsacOpt, state="readonly", width=14)
-        self.regulator.pack(side=LEFT,padx=(0,5))
+        self.regulator.pack(side=LEFT)
 
         self.fsacOpt.pack(side=TOP, fill=X, expand=YES)
-        self.fstree = Frame(self.fsac)
+        ttk.Style().configure("Treeview.Heading", font=(None, 11))
+        self.fstree = ttk.Frame(self.fsac)
         self.sactree = ttk.Treeview(self.fstree,height=7)
         self.sactree['show'] = 'headings' # remover primeira coluna vazia
-        self.sactree["columns"]=("gene","sequence")
-        self.sactree.column("gene", width=20, anchor='center')
+        self.sactree["columns"]=("check","gene","sequence")
+        self.sactree.column("check", width=1, anchor='center')
+        self.sactree.column("gene", width=20, anchor='center',stretch=True)
+        self.sactree.heading("check", text="☐")#" ☐ ☑ ☒ "
         self.sactree.heading("gene", text="Gene")
         self.sactree.heading("sequence", text="Sequence")
-        self.sbar1= Scrollbar(self.fstree, orient='vertical', command=self.sactree.yview, width=10)
+        self.sbar1= ttk.Scrollbar(self.fstree, orient='vertical', command=self.sactree.yview)
         self.sactree.configure(yscroll=self.sbar1.set)
         self.sbar1.pack(side=RIGHT, fill=Y)
         self.sactree.pack(side=TOP, fill=BOTH, expand=YES)
-        self.fstree.pack(side=TOP,fil=X,expand=YES)
+        self.fstree.pack(side=TOP,fil=X,expand=YES, padx=(0,12))
 
-        self.fsave = Frame(self.fsac)
-        self.lgenes = Label(self.fsave, text = "")
+        self.fsave = ttk.Frame(self.fsac)
+        self.lgenes = ttk.Label(self.fsave, text = "")
         self.lgenes.pack(side=LEFT)
-        Button(self.fsave, text="Export", command=self.saveFile).pack(side=RIGHT, padx=2)
+        ttk.Button(self.fsave, text="Export", command=self.saveFile).pack(side=RIGHT, padx=2)
         self.fsave.pack(side=TOP, fil=X)
 
-        self.fsOptions = Frame(self.fsac)
-        Label(self.fsOptions, text = "Upstream (bp):").pack(side=LEFT)
+        self.fsOptions = ttk.Frame(self.fsac)
+        ttk.Label(self.fsOptions, text = "Upstream (bp):").pack(side=LEFT)
         self.vint = (self.master.register(self.validate), '%P', '%s', '%S', '%W', '%V', '0', 'Int')
-        self.supstream=Entry(self.fsOptions, width=6, validate="all", validatecommand=self.vint)
+        self.supstream=ttk.Entry(self.fsOptions, width=6, validate="all", validatecommand=self.vint)
         self.supstream.pack(side=LEFT)
         self.supstream.insert(END, '1000')
-        Label(self.fsOptions, text = "Downstream (bp):").pack(side=LEFT,padx=(5,0))
-        self.sdownstream=Entry(self.fsOptions, width=6, validate="all", validatecommand=self.vint)
+        ttk.Label(self.fsOptions, text = "Downstream (bp):").pack(side=LEFT,padx=(5,0))
+        self.sdownstream=ttk.Entry(self.fsOptions, width=6, validate="all", validatecommand=self.vint)
         self.sdownstream.pack(side=LEFT,padx=(0,5))
         self.sdownstream.insert(END, '0')
         self.sfgState = BooleanVar()
-        self.sfg = Checkbutton(self.fsOptions, text = "Full gene", variable=self.sfgState, command=self.fullGene)
+        self.sfg = ttk.Checkbutton(self.fsOptions, text = "Full gene", variable=self.sfgState, command=self.fullGene)
         self.sfg.pack(side=LEFT)
         self.fsOptions.pack(side=TOP, fill=X, expand=YES, padx=2)
         self.fsac.pack(side=TOP, fill=X)
 
         # Sequências
         self.page2 = ttk.Frame(self.fcontainer)
-        self.fsequences = Frame(self.page2)
+        self.fsequences = ttk.Frame(self.page2)
         self.sequence = ScrolledText(self.fsequences, height=16)
         self.sequence.insert(END, '')
         self.sequence.pack(side=TOP, fill=X, expand=YES)
@@ -111,51 +114,54 @@ class InterfaceView():
 
         #Grid de FASTA
         self.page4 = ttk.Frame(self.fcontainer)
-        self.ffasta = Frame(self.page4)
-        self.ffile = Frame(self.ffasta)
-        Button(self.ffile, text="Load File", command=self.loadFile).pack(side=LEFT, padx=2)
-        self.filePath = Label(self.ffile, text = "")
+        self.ffasta = ttk.Frame(self.page4)
+        self.ffile = ttk.Frame(self.ffasta)
+        ttk.Button(self.ffile, text="Load File", command=self.loadFile).pack(side=LEFT, padx=2)
+        self.filePath = ttk.Label(self.ffile, text = "")
         self.filePath.pack(side=LEFT)
         self.ffile.pack(side=TOP, fill=X)
-        self.fseq = Frame(self.ffasta)
-        Label(self.fseq, text = "Search:").pack(side=LEFT)
-        self.seqSearch=Entry(self.fseq,textvariable=ssv)
+        self.fseq = ttk.Frame(self.ffasta)
+        ttk.Label(self.fseq, text = "Search:").pack(side=LEFT)
+        self.seqSearch=ttk.Entry(self.fseq,textvariable=ssv)
         self.seqSearch.pack(side=LEFT)
-        self.lgenesF = Label(self.fseq, text = "")
+        self.lgenesF = ttk.Label(self.fseq, text = "")
         self.lgenesF.pack(side=RIGHT)
-        self.fseq.pack(side=TOP, fill=X, expand=YES)
-        self.ffastatree = Frame(self.ffasta)
-        self.seqtree1 = ttk.Treeview(self.ffastatree,height=6)
-        self.seqtree1['show'] = 'headings' # remover primeira coluna vazia
-        self.seqtree1["columns"]=("name","sequence")
-        self.seqtree1.column("name", width=20, anchor='center')
-        self.seqtree1.heading("name", text="Name")
-        self.seqtree1.heading("sequence", text="Sequence")
-        self.bar1= Scrollbar(self.ffastatree, orient='vertical', command=self.seqtree1.yview, width=10)
-        self.seqtree1.configure(yscroll=self.bar1.set)
-        self.bar1.pack(side=RIGHT, fill=Y)
-        self.seqtree1.pack(side=TOP, fill=BOTH, expand=YES)
-        self.ffastatree.pack(side=TOP,fil=X,expand=YES,padx=(0,10))
 
-        self.fsaveF = Frame(self.ffasta)
-        self.bload = Button(self.fsaveF, text="Load GFF", command=self.loadGFF)
-        self.filePathGFF = Label(self.fsaveF, text = "") #Manter opções desabilitadas enquanto estiver vazio
+        self.fseq.pack(side=TOP, fill=X, expand=YES)
+        self.ffastatree = ttk.Frame(self.ffasta)
+        self.seqtree = ttk.Treeview(self.ffastatree,height=6)
+        self.seqtree['show'] = 'headings' # remover primeira coluna vazia
+        self.seqtree["columns"]=("check","name","sequence")
+        self.seqtree.column("check", width=1, anchor='center')
+        self.seqtree.column("name", width=20, anchor='center')
+        self.seqtree.heading("check", text="☐")#" ☐ ☑ ☒ "
+        self.seqtree.heading("name", text="Name")
+        self.seqtree.heading("sequence", text="Sequence")
+        self.bar1= ttk.Scrollbar(self.ffastatree, orient='vertical', command=self.seqtree.yview)
+        self.seqtree.configure(yscroll=self.bar1.set)
+        self.bar1.pack(side=RIGHT, fill=Y)
+        self.seqtree.pack(side=TOP, fill=BOTH, expand=YES)
+        self.ffastatree.pack(side=TOP,fil=X,expand=YES,padx=(0,12))
+
+        self.fsaveF = ttk.Frame(self.ffasta)
+        self.bload = ttk.Button(self.fsaveF, text="Load GFF", command=self.loadGFF)
+        self.filePathGFF = ttk.Label(self.fsaveF, text = "") #Manter opções desabilitadas enquanto estiver vazio
         self.filePathGFF.pack(side=LEFT)
-        Button(self.fsaveF, text="Export", command=self.saveFile).pack(side=RIGHT, padx=2)
+        ttk.Button(self.fsaveF, text="Export", command=self.saveFile).pack(side=RIGHT, padx=2)
         self.fsaveF.pack(side=TOP, fill=X)
 
 
-        self.fgOptions = Frame(self.ffasta)
-        Label(self.fgOptions, text = "Upstream (bp):").pack(side=LEFT)
-        self.upstream=Entry(self.fgOptions, width=6, validate="all", validatecommand=self.vint)
+        self.fgOptions = ttk.Frame(self.ffasta)
+        ttk.Label(self.fgOptions, text = "Upstream (bp):").pack(side=LEFT)
+        self.upstream=ttk.Entry(self.fgOptions, width=6, validate="all", validatecommand=self.vint)
         self.upstream.pack(side=LEFT)
         self.upstream.insert(END, '1000')
-        Label(self.fgOptions, text = "Downstream (bp):").pack(side=LEFT,padx=(5,0))
-        self.downstream=Entry(self.fgOptions, width=6, validate="all", validatecommand=self.vint)
+        ttk.Label(self.fgOptions, text = "Downstream (bp):").pack(side=LEFT,padx=(5,0))
+        self.downstream=ttk.Entry(self.fgOptions, width=6, validate="all", validatecommand=self.vint)
         self.downstream.pack(side=LEFT,padx=(0,5))
         self.downstream.insert(END, '0')
         self.fgState = BooleanVar()
-        self.fg = Checkbutton(self.fgOptions, text = "Full gene", variable=self.fgState, command=self.fullGene)
+        self.fg = ttk.Checkbutton(self.fgOptions, text = "Full gene", variable=self.fgState, command=self.fullGene)
         self.fg.pack(side=LEFT)
 
         self.ffasta.pack(side=TOP, fill=X)
@@ -170,9 +176,9 @@ class InterfaceView():
         ttk.Separator(self.fmenu, orient="horizontal").pack(side=TOP, fill=X, pady=3)
 
         #DB
-        self.fdb = Frame(self.fmenu)
+        self.fdb = ttk.Frame(self.fmenu)
         #Combobox DBs
-        Label(self.fdb, text = "Database:").pack(side=LEFT)
+        ttk.Label(self.fdb, text = "Database:").pack(side=LEFT)
         self.dbbox = ttk.Combobox(self.fdb,state="readonly",width=10)
         self.dbbox.pack(side=LEFT)
         #Carregamento de bds
@@ -181,52 +187,50 @@ class InterfaceView():
         self.dbbox.current(0)
         self.fdb.pack(side=TOP, fill=X)
 
-        self.fnewdb = Frame(self.fmenu)
-        Label(self.fnewdb, text = "New Database Name:").pack(side=LEFT)
-        self.newdb=Entry(self.fnewdb, width=15)
+        self.fnewdb = ttk.Frame(self.fmenu)
+        ttk.Label(self.fnewdb, text = "New Database Name:").pack(side=LEFT)
+        self.newdb=ttk.Entry(self.fnewdb, width=15)
         self.newdb.pack(side=LEFT)
-        #Button Create New
-        Button(self.fnewdb, text="Create", command=self.createDB).pack(side=LEFT)
+        #ttk.Button Create New
+        ttk.Button(self.fnewdb, text="Create", command=self.createDB).pack(side=LEFT)
         self.fnewdb.pack(side=TOP, fill=X)
 
         ttk.Separator(self.fmenu, orient="horizontal").pack(side=TOP, fill=X, pady=3)
-        self.ftfs = Frame(self.fmenu)
+        self.ftfs = ttk.Frame(self.fmenu)
 
 
-        self.fsubthr = Frame(self.ftfs)
-        Label(self.fsubthr, text = "Threshold:").pack(side=LEFT)
+        self.fsubthr = ttk.Frame(self.ftfs)
+        ttk.Label(self.fsubthr, text = "Threshold:").pack(side=LEFT)
         self.vfloat = (self.master.register(self.validate), '%P', '%s', '%S', '%W', '%V', '0.8', 'Float')
-        self.threshold = Entry(self.fsubthr, width=6, validate="all", validatecommand=self.vfloat)
+        self.threshold = ttk.Entry(self.fsubthr, width=6, validate="all", validatecommand=self.vfloat)
         self.threshold.insert(END, '0.8')
         self.threshold.pack(side=LEFT)
         self.fsubthr.grid(row=0, column=0, sticky=E+W)
 
         self.normalizedState = BooleanVar()
-        self.normalized = Checkbutton(self.ftfs, text = "Normalized", variable=self.normalizedState)
+        self.normalized = ttk.Checkbutton(self.ftfs, text = "Normalized", variable=self.normalizedState)
         self.normalized.grid(row=0, column=1, sticky=E+W)
-        self.normalized.select()
+        self.normalizedState.set(True)
 
-        self.fsubtfs = Frame(self.ftfs)
-        Label(self.fsubtfs, text = "Confidence:").pack(side=LEFT)
+        self.fsubtfs = ttk.Frame(self.ftfs)
+        ttk.Label(self.fsubtfs, text = "Confidence:").pack(side=LEFT)
         self.confidence = ttk.Combobox(self.fsubtfs, state="readonly", width=8)
         self.confidence.pack(side=LEFT)
         self.confidence['values'] = self.DBs['ExpertConfidence'].loc[self.DBs['Database']==self.dbbox.get()].tolist()
         self.fsubtfs.grid(row=1, column=0, sticky=E+W)
 
         self.foorState = BooleanVar()
-        self.outOfRange = Checkbutton(self.ftfs, text = "Out of range", variable=self.foorState)
+        self.outOfRange = ttk.Checkbutton(self.ftfs, text = "Out of range", variable=self.foorState)
         self.outOfRange.grid(row=1, column=1, sticky=E+W)
-        self.outOfRange.select()
+        self.foorState.set(True)
 
-        Label(self.ftfs, text = "Transcription Factors:").grid(row=2, sticky=E+W)
-        self.f0 = Frame(self.ftfs)
+        ttk.Label(self.ftfs, text = "Transcription Factors:").grid(row=2, sticky=E+W)
+        self.f0 = ttk.Frame(self.ftfs)
         stfv = StringVar()
         stfv.trace("w", lambda name, index, mode, stfv=stfv: self.updateSBAll())
-        self.search=Entry(self.f0, textvariable=stfv, width=25)
+        self.search=ttk.Entry(self.f0, textvariable=stfv, width=25)
         self.search.pack(padx=(0,12))
-        #self.box = ttk.Combobox(self.ftfs)
-        #self.box.grid(row=2, sticky=E+W)
-        self.scrollbarAll = Scrollbar(self.f0, width=10)
+        self.scrollbarAll = ttk.Scrollbar(self.f0)
         self.scrollbarAll.pack(side=RIGHT, fill=Y)
         self.vAll = Variable()
         self.lAll = Listbox(self.f0, height=5, width=25, yscrollcommand=self.scrollbarAll.set, listvariable=self.vAll)
@@ -234,9 +238,9 @@ class InterfaceView():
         self.scrollbarAll.config(command=self.lAll.yview)
         self.f0.grid(row=3, column=0, rowspan=5, sticky=E+W)
 
-        Label(self.ftfs, text = "Targets:").grid(row=2, column=1, sticky=E+W)
-        self.f1 = Frame(self.ftfs)
-        self.scrollbarTargets = Scrollbar(self.f1, width=10)
+        ttk.Label(self.ftfs, text = "Targets:").grid(row=2, column=1, sticky=E+W)
+        self.f1 = ttk.Frame(self.ftfs)
+        self.scrollbarTargets = ttk.Scrollbar(self.f1)
         self.scrollbarTargets.pack(side=RIGHT, fill=Y)
         self.vtargets = Variable()
         self.ltargets = Listbox(self.f1, height=6, width=25, yscrollcommand=self.scrollbarTargets.set, listvariable=self.vtargets)
@@ -246,11 +250,11 @@ class InterfaceView():
 
         self.ftfs.pack(side=TOP)
 
-        Button(self.ftfs, text = "Add (+) target", command= lambda: self.addTF("+")).grid(row=9, column=0, sticky=E+W)
-        Button(self.ftfs, text = "Add (-) target", command= lambda: self.addTF("-")).grid(row=10,  column=0, sticky=E+W)
-        Button(self.ftfs, text = "Remove target", command=self.removeTarget).grid(row=9,  column=1, sticky=E+W)
-        Button(self.ftfs, text = "Reset", command=self.reset).grid(row=10,  column=1, sticky=E+W)
-        Button(self.ftfs, text = "Score", command=self.Score).grid(row=11,  column=0, columnspan=2, sticky=E+W+S+N)
+        ttk.Button(self.ftfs, text = "Add (+) target", command= lambda: self.addTF("+")).grid(row=9, column=0, sticky=E+W)
+        ttk.Button(self.ftfs, text = "Add (-) target", command= lambda: self.addTF("-")).grid(row=10,  column=0, sticky=E+W)
+        ttk.Button(self.ftfs, text = "Remove target", command=self.removeTarget).grid(row=9,  column=1, sticky=E+W)
+        ttk.Button(self.ftfs, text = "Reset", command=self.reset).grid(row=10,  column=1, sticky=E+W)
+        ttk.Button(self.ftfs, text = "Score", command=self.Score).grid(row=11,  column=0, columnspan=2, sticky=E+W+S+N)
 
 
         self.fmenu.pack(side=LEFT, fill=Y, padx=10, pady=3)
@@ -260,25 +264,25 @@ class InterfaceView():
         self.fcontOptions = ttk.Notebook(self.master)
 
         self.fsingleOpt = ttk.Frame(self.fcontOptions)
-        self.fsoopt = Frame(self.fsingleOpt)
+        self.fsoopt = ttk.Frame(self.fsingleOpt)
         self.allLablesState = BooleanVar()
-        self.allLables = Checkbutton(self.fsoopt, text = "All Labels", variable=self.allLablesState)
+        self.allLables = ttk.Checkbutton(self.fsoopt, text = "All ttk.Labels", variable=self.allLablesState)
         self.allLables.pack(side=LEFT)
         self.paralogState = BooleanVar()
-        self.cbparalogs = Checkbutton(self.fsoopt, text = "Mark paralogs", variable=self.paralogState)
+        self.cbparalogs = ttk.Checkbutton(self.fsoopt, text = "Mark paralogs", variable=self.paralogState)
         self.cbparalogs.pack(side=LEFT)
-        self.cbparalogs.select()
+        self.paralogState.set(True)
         self.fsoopt.pack(side=TOP, fill=X)
 
-        self.fparalogs=Frame(self.fsingleOpt)
+        self.fparalogs=ttk.Frame(self.fsingleOpt)
         self.lparalogs = Message(self.fparalogs, text = "Paralogs: {}", width=700)
         self.lparalogs.pack(side=LEFT, fill=X)
         self.fparalogs.pack(side=TOP, fill=X)
 
-        self.fviewSingle = Frame(self.fsingleOpt)
-        self.fcSequence = Frame(self.fviewSingle)
+        self.fviewSingle = ttk.Frame(self.fsingleOpt)
+        self.fcSequence = ttk.Frame(self.fviewSingle)
         self.fcSequence.pack(side=TOP, fill=X)
-        self.fimg = Frame(self.fviewSingle)
+        self.fimg = ttk.Frame(self.fviewSingle)
         self.figure = None
         self.toolbar = None
         self.fimg.pack(side=TOP, expand=True, fill=BOTH)
@@ -286,14 +290,14 @@ class InterfaceView():
         self.fsingleOpt.pack(side=TOP, fill=BOTH)
 
         self.fmultiOpt=ttk.Frame(self.fcontOptions)
-        self.fmoopt=Frame(self.fmultiOpt)
+        self.fmoopt=ttk.Frame(self.fmultiOpt)
         self.ve = IntVar()
-        Radiobutton(self.fmoopt, text="All sequences", variable=self.ve, value=0).pack(side=LEFT)
-        Radiobutton(self.fmoopt, text="Any TF", variable=self.ve, value=1).pack(side=LEFT)
-        Radiobutton(self.fmoopt, text="All TF", variable=self.ve, value=2).pack(side=LEFT)
+        ttk.Radiobutton(self.fmoopt, text="All sequences", variable=self.ve, value=0).pack(side=LEFT)
+        ttk.Radiobutton(self.fmoopt, text="Any TF", variable=self.ve, value=1).pack(side=LEFT)
+        ttk.Radiobutton(self.fmoopt, text="All TF", variable=self.ve, value=2).pack(side=LEFT)
         self.ve.set(0)
         self.fmoopt.pack(side=TOP, fill=X)
-        self.fviewMulti = Frame(self.fmultiOpt)
+        self.fviewMulti = ttk.Frame(self.fmultiOpt)
         self.fviewMulti.pack(side=LEFT, fill=BOTH, expand=True)
         self.fmultiOpt.pack(side=TOP, fill=BOTH)
 
@@ -305,11 +309,13 @@ class InterfaceView():
         self.dbbox.bind("<<ComboboxSelected>>", self.updateBox)
         self.confidence.bind("<<ComboboxSelected>>", self.updateAll)
         self.regulator.bind("<<ComboboxSelected>>", self.searchGenes)
-
         self.fcSequence.bind("<Enter>", self._on_frame_focus)
         self.fcSequence.bind("<Leave>", self._on_frame_lost_focus)
         self.fviewMulti.bind("<Enter>", self._on_frame_focus)
         self.fviewMulti.bind("<Leave>", self._on_frame_lost_focus)
+
+        self.sactree.bind("<ButtonRelease-1>", self._checkItem)
+        self.seqtree.bind("<ButtonRelease-1>", self._checkItem)
 
         self.seq = None
         self.name = None
@@ -318,6 +324,7 @@ class InterfaceView():
         self.genes = None
         self.genesF = None
         self.genesTemp = None
+        self.genesTempF = None
         self.regulators = None
         self.fileNameF = None
         self.pms = None
@@ -327,6 +334,47 @@ class InterfaceView():
         self.changeInput()
         self.updateBox()
         self.master.mainloop() # após todas especificações da janela
+
+    def _checkItem(self, event):
+        tree = self.sactree if(self.fcontainer.index(self.fcontainer.select())==0) else self.seqtree
+        if(tree.identify_column(event.x)=="#1"):
+            #unchecked b'\xe2\x98\x90' ☐
+            #checked b'\xe2\x98\x91' ☑
+            #partial b'\xe2\x98\x92' ☒
+            genes, genesTemp, search= [self.genes,self.genesTemp,self.sacSearch] if(self.fcontainer.index(self.fcontainer.select())==0) else [self.genesF,self.genesTempF,self.seqSearch]
+
+            if(genes is not None and genesTemp is not None):
+                if(tree.identify_region(event.x, event.y)=='heading'):
+                    status = tree.heading('check')['text'].encode("utf-8")
+                    newStatus = "☑" if(status==b'\xe2\x98\x90' or status==b'\xe2\x98\x92') else "☐"
+                    #Mudar todos checks
+                    if(search.get().strip()=="" and (self.fcontainer.index(self.fcontainer.select())==1 or self.regulator.get()=='None')): #global
+                        genes.loc[:, 'check']=True if(newStatus=="☑") else False
+                        genesTemp.loc[:, 'check']=True if(newStatus=="☑") else False
+                        for row in tree.get_children():
+                            values = tree.item(row)['values']
+                            values[0] = newStatus
+                            tree.item(row, values=values)
+                    else: #local
+                        genesTemp.loc[:, 'check']=True if(newStatus=="☑") else False
+                        for row in tree.get_children():
+                            values = tree.item(row)['values']
+                            values[0] = newStatus
+                            tree.item(row, values=values)
+                            genes.loc[genes['gene']==str(values[1]), 'check']=True if(newStatus=="☑") else False
+                else:
+                    row = tree.identify_row(event.y)
+                    values = tree.item(row)['values']
+                    values[0] = "☑" if(tree.item(row)['values'][0].encode("utf-8")==b'\xe2\x98\x90') else "☐"
+                    tree.item(row, values=values)
+
+                    genes.loc[genes['gene']==str(values[1]), 'check']=True#if(values[0]=="☑") else False
+                    genesTemp.loc[genesTemp['gene']==str(values[1]), 'check']=True if(values[0]=="☑") else False
+                    total = len(genesTemp.loc[genesTemp['check']==True])
+
+                    newStatus = "☑" if(total == len(genesTemp)) else ("☐" if total==0 else "☒")
+                #Mudar check heading
+                tree.heading('check', text=newStatus)
 
     def _on_frame_focus(self, event):
         if self.OS == "Linux" :
@@ -392,13 +440,18 @@ class InterfaceView():
         for widget in  self.fviewMulti.winfo_children():
             widget.destroy()
 
-        #chamar o canvas
         self.updateGenes()
         self.searchGenes()
-        square=self.master.winfo_height()-(self.fviewMulti.winfo_rooty()-self.master.winfo_rooty())
-        #self.fviewMulti.configure(height=square)
-        cp.canvasPosition(self.fviewMulti, 20, self.fmultiOpt.winfo_width(), 10, seqs=(self.genesTemp if(self.fcontainer.index(self.fcontainer.select())==0) else self.genesTempF),
-            targets=[self.targets,self.pmTargets], threshold=float(self.threshold.get()), exist=self.ve.get(), normalized=self.normalizedState.get(), height=square)
+
+        genesTemp = self.genes.loc[self.genes['check']==True] if(self.fcontainer.index(self.fcontainer.select())==0) else self.genesF.loc[self.genesF['check']==True]
+
+        if(len(genesTemp)>0):
+            #chamar o canvas
+            square=self.master.winfo_height()-(self.fviewMulti.winfo_rooty()-self.master.winfo_rooty())
+            cp.canvasPosition(self.fviewMulti, 20, self.fmultiOpt.winfo_width(), 10, seqs=genesTemp,
+                targets=[self.targets,self.pmTargets], threshold=float(self.threshold.get()), exist=self.ve.get(), normalized=self.normalizedState.get(), height=square)
+        else:
+            self.dialog("Plese, select a set.")
 
     def flatten(self, L):
         for item in L:
@@ -422,19 +475,19 @@ class InterfaceView():
         try:
             if(self.fcontainer.index(self.fcontainer.select())==1):
                 self.seq = self.sequence.get(1.0,END).rstrip() #rstrip remove quebras de linha #usar RE para verificar integridade da sequência
-            elif(self.fcontainer.index(self.fcontainer.select())==2  and len(self.seqtree1.get_children())>0):
-                #self.seq = self.seqtree1.item(self.seqtree1.selection())['values'][1]
-                self.name = str(self.seqtree1.item(self.seqtree1.selection())['values'][0])
+            elif(self.fcontainer.index(self.fcontainer.select())==2  and len(self.seqtree.get_children())>0):
+                #self.seq = self.seqtree.item(self.seqtree.selection())['values'][1]
+                self.name = str(self.seqtree.item(self.seqtree.selection())['values'][1])
                 self.updateGenes()
                 self.searchGenes()
                 self.seq = list(self.genesF.loc[self.genesF['gene']==self.name,'sequence'])[0]
             elif(self.fcontainer.index(self.fcontainer.select())==0  and len(self.sactree.get_children())>0):
-                self.name = str(self.sactree.item(self.sactree.selection())['values'][0])
+                self.name = str(self.sactree.item(self.sactree.selection())['values'][1])
                 self.updateGenes()
                 self.searchGenes()
                 self.seq = list(self.genes.loc[self.genes['gene']==self.name,'sequence'])[0]
         except:
-            self.dialog("Select a sequence.")
+            self.dialog("Please, select a sequence.")
 
         upstream,downstream=[int(self.supstream.get().strip()), -1 if(self.sfgState.get()) else int(self.sdownstream.get().strip())] if(self.fcontainer.index(self.fcontainer.select())==0) else \
             ([int(self.upstream.get().strip()), -1 if(self.fgState.get()) else int(self.downstream.get().strip())] if(self.fcontainer.index(self.fcontainer.select())==2) else [len(self.seq),0])
@@ -599,20 +652,20 @@ class InterfaceView():
                     content = f.readlines()
                 self.sequence.insert(END,content)
             elif(self.fcontainer.index(self.fcontainer.select())==2):
-                for row in self.seqtree1.get_children():
-                    self.seqtree1.delete(row)
+                for row in self.seqtree.get_children():
+                    self.seqtree.delete(row)
                 genes=[]
                 with open(fileName, "rU") as handle:
                     i=0
                     for record in SeqIO.parse(handle, "fasta"):
-                        genes.append([record.description, str(record.seq), len(record.seq), 0])
-                        self.seqtree1.insert("", i, iid=str(i), values=(record.description,(str(record.seq)[:30]+"..." if len(str(record.seq))>33 else record.seq)))
+                        genes.append([record.description, str(record.seq), len(record.seq), 0, False])
+                        self.seqtree.insert("", i, iid=str(i), values=("☐", record.description,(str(record.seq)[:30]+"..." if len(str(record.seq))>33 else record.seq)))
                         i+=1
-                    self.seqtree1.selection_set("0")
-                self.genesF = pd.DataFrame(genes, columns=["gene", "sequence", "upstream", "downstream"])
-                self.searchGenes()
+                    self.seqtree.selection_set("0")
+                self.genesF = pd.DataFrame(genes, columns=["gene", "sequence", "upstream", "downstream", "check"])
                 self.fileNameF = fileName
                 self.bload.pack(side=LEFT, padx=2)
+                self.searchGenes()
 
     def updateBox(self, event=None):
         self.DBs = dbu.getDBs()
@@ -659,18 +712,28 @@ class InterfaceView():
         if(self.fcontainer.index(self.fcontainer.select())==2 and self.genomeF!=None):
             upstream = int(self.upstream.get().strip())
             downstream = int(self.downstream.get().strip())
-            self.genesF = Utils.getSequences(self.genomeF[0], self.genomeF[1], upstream, -1 if(self.fgState.get()) else downstream)
+            check = self.genesF.iloc[:,4]
+            self.genesF = Utils.getSequences(self.genomeF[0], self.genomeF[1], upstream, -1 if(self.sfgState.get()) else downstream)
+            self.genesF['check'] = False if(len(check)!=len(self.genesF)) else check
+
         #pegar genes do FASTA
         if(self.fcontainer.index(self.fcontainer.select())==0):
             upstream = int(self.supstream.get().strip())
             downstream = int(self.sdownstream.get().strip())
-            self.genes = Utils.getSequences(self.genome[0], self.genome[1], upstream, -1 if(self.sfgState.get()) else downstream)
+            if self.genes is None:
+                self.genes = Utils.getSequences(self.genome[0], self.genome[1], upstream, -1 if(self.sfgState.get()) else downstream)
+                self.genes['check'] = False
+            else:
+                check = self.genes.iloc[:,4]
+                self.genes = Utils.getSequences(self.genome[0], self.genome[1], upstream, -1 if(self.sfgState.get()) else downstream)
+                self.genes['check'] = check
+
 
     def searchGenes(self, event=None):
         if(self.fcontainer.index(self.fcontainer.select())==2 and self.genesF is not None):
             search = self.seqSearch.get().strip().upper()
-            for row in self.seqtree1.get_children():
-                self.seqtree1.delete(row)
+            for row in self.seqtree.get_children():
+                self.seqtree.delete(row)
             k=0
             genesTemp=[]
             for i in range(len(self.genesF)):
@@ -678,21 +741,24 @@ class InterfaceView():
                 sequence = self.genesF.iloc[i,1]
                 up = self.genesF.iloc[i,2]
                 down = self.genesF.iloc[i,3]
+                check = self.genesF.iloc[i,4]
                 if(search in name.upper() or search==""):
-                    self.seqtree1.insert("", i, iid=str(k), values=(name,(sequence[:30]+"..." if len(sequence)>33 else sequence)))
-                    genesTemp.append([name, sequence,up,down])
+                    self.seqtree.insert("", i, iid=str(k), values=(('☑' if(check) else '☐'), name,(sequence[:30]+"..." if len(sequence)>33 else sequence)))
+                    genesTemp.append([name,sequence,up,down,check])
                     k+=1
-            self.genesTempF = pd.DataFrame(genesTemp, columns=["gene", "sequence", "upstream", "downstream"])
+            self.genesTempF = pd.DataFrame(genesTemp, columns=["gene", "sequence", "upstream", "downstream", "check"])
             if(k>=1):
-                self.seqtree1.selection_set("0")
+                self.seqtree.selection_set("0")
             self.lgenesF['text'] = str(k)+" genes found"
+            total = len(self.genesTempF.loc[self.genesTempF['check']==True])
+            newStatus = "☑" if(total == len(self.genesTempF)) else ("☐" if total==0 else "☒")
+            self.seqtree.heading('check', text=newStatus)
 
         if(self.fcontainer.index(self.fcontainer.select())==0):
             search = self.sacSearch.get().strip().upper()
             targets = None if(self.regulator.get()=='None') else dbu.getTargets(self.regulator.get().split("/")[1])
             for row in self.sactree.get_children():
                 self.sactree.delete(row)
-
             k=0
             genesTemp=[]
             for i in range(len(self.genes)):
@@ -700,15 +766,20 @@ class InterfaceView():
                 sequence = self.genes.iloc[i,1]
                 up = self.genes.iloc[i,2]
                 down = self.genes.iloc[i,3]
+                check = self.genes.iloc[i,4]
                 if(targets is None or name in targets['TargetSys'].tolist() or name in targets['TargetStd'].tolist()) \
                     and (search in name.upper() or search==""): # or search in sequence):
-                        self.sactree.insert("", i, iid=str(k), values=(name,(sequence[:30]+"..." if len(sequence)>33 else sequence)))
-                        genesTemp.append([name, sequence,up,down])
+                        #self.sactree.insert("", i, iid=str(k), values=(name,(sequence[:30]+"..."+" ☐ ☑ ☒ " if len(sequence)>33 else sequence)))
+                        self.sactree.insert("", i, iid=str(k), values=(('☑' if(check) else '☐'), name,(sequence[:30]+"..." if len(sequence)>33 else sequence)))
+                        genesTemp.append([name, sequence,up,down, check])
                         k+=1
-            self.genesTemp = pd.DataFrame(genesTemp, columns=["gene", "sequence", "upstream", "downstream"])
+            self.genesTemp = pd.DataFrame(genesTemp, columns=["gene", "sequence", "upstream", "downstream", "check"])
             if(k>=1):
                 self.sactree.selection_set("0")
             self.lgenes['text'] = str(k)+" genes found"
+            total = len(self.genesTemp.loc[self.genesTemp['check']==True])
+            newStatus = "☑" if(total == len(self.genesTemp)) else ("☐" if total==0 else "☒")
+            self.sactree.heading('check', text=newStatus)
 
     def saveFile(self):
         self.updateGenes()

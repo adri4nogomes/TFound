@@ -52,14 +52,12 @@ class canvasPosition():
         self.exist = exist
         self.normalized=normalized
 
-        self.position = Frame(frame)
-        self.canvas = Canvas(self.position, bg='white')
-        bar=Scrollbar(self.position, orient=VERTICAL)
+        self.canvas = Canvas(frame, bg='white')
+        bar=ttk.Scrollbar(frame, orient=VERTICAL)
         bar.pack(side=RIGHT, fill=Y)
         bar.config(command=self.canvas.yview, width=10)
         self.canvas.config(yscrollcommand=bar.set)
         self.canvas.pack(side=LEFT, expand=True, fill=BOTH)
-        self.position.pack(side=TOP,fill=BOTH, expand=True)
         #criar círculos principais
         y, colors = self.circles()
 
