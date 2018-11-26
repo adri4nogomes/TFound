@@ -41,7 +41,7 @@ COLORS = ['dark slate gray', 'dim gray', 'slate gray',
 'purple4', 'MediumPurple1', 'MediumPurple4', 'thistle1', 'thistle4']
 
 class canvasPosition():
-    def __init__(self, frame, margin, width, rad, seqs, targets, threshold, exist, normalized=True, height=0):
+    def __init__(self, frame, margin, width, rad, seqs, targets, threshold, exist, normalized=True, height=0, func=None):
         self.margin = margin
         self.width = width - 16 #-scrollbar
         self.rad = rad
@@ -51,11 +51,12 @@ class canvasPosition():
         self.threshold = threshold
         self.exist = exist
         self.normalized=normalized
+        self.func=func
 
         self.canvas = Canvas(frame, bg='white')
         bar=ttk.Scrollbar(frame, orient=VERTICAL)
         bar.pack(side=RIGHT, fill=Y)
-        bar.config(command=self.canvas.yview, width=10)
+        bar.config(command=self.canvas.yview)
         self.canvas.config(yscrollcommand=bar.set)
         self.canvas.pack(side=LEFT, expand=True, fill=BOTH)
         #criar círculos principais
@@ -145,8 +146,10 @@ class canvasPosition():
 
             if(self.exist==0 or (self.exist==1 and any(exist)) or (self.exist==2 and all(exist))):
                 nseq+=1
+                name = self.seqs.iloc[seq,0]
                 f = tk.font.Font(size=-2*self.rad, weight='bold', underline=(1 if(underline) else 0))
-                self.canvas.create_text(self.rad,y,text=self.seqs.iloc[seq,0], anchor=W, fill="black", font=f)
+                wtext = self.canvas.create_text(self.rad,y,text=name, anchor=W, fill="black", font=f)
+                self.canvas.tag_bind(wtext, '<ButtonPress-1>', lambda e, name=name: self.func(name=name))
 
                 upstream = self.seqs.iloc[seq,2]
                 downstream = self.seqs.iloc[seq,3]

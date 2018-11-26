@@ -166,8 +166,8 @@ def PlotAllScores(sequence, tfs=[], outOfRange=False, principalOnly=False, margi
             else:
                 points.loc[len(points)] = [tfs[i].StandardName, sense[i], anti[i], "B", tam] if(principalOnly==False) else ["", sense[i], anti[i], "B", tam]
 
-        fig = Figure(figsize=(square/dpi,square/dpi), dpi=dpi)
-        a = fig.add_subplot(111)
+        fig = Figure(figsize=(square/dpi,square/dpi), dpi=dpi,tight_layout=True)
+        a = fig.add_subplot(111, aspect='equal')
         a.scatter(points.loc[:,"Sense"], points.loc[:,"Anti-sense"], marker='.', c=points.loc[:,"Color"], cmap=plt.get_cmap('Spectral'), s=points.loc[:,"ExpertConfidence"])
 
         # Nomear pontos
@@ -185,12 +185,12 @@ def PlotAllScores(sequence, tfs=[], outOfRange=False, principalOnly=False, margi
             a.axhline(Min-margin, color='B', lw=0.5)
             a.axvline(Min-margin, color='B', lw=0.5)
 
-        a.set_title ("Score distribution of "+name if name!=None else Array2DNA(sequence), fontsize=15, fontweight=0, color='orange')
-        a.set_ylabel("Sequence' Score", fontsize=14)
-        a.set_xlabel("Sequence Score", fontsize=14)
+        a.set_title ("Score distribution of "+name if name!=None else Array2DNA(sequence), fontsize=16, fontweight=0, color='orange')
+        a.set_ylabel("Sequence' Score", labelpad=0, fontsize=12)
+        a.set_xlabel("Sequence Score", fontsize=12)
 
-        #Não funciona o save
-        if(save==True):
+        #corrigir save
+        '''if(save==True):
             output = "imgs/Scores_"+"_".join(t.upper() for t in targets)+"_"+str(margin)+".svg" if output==None else output
             output = getOutputName(output)
             os.makedirs(os.path.dirname(output), exist_ok=True)
@@ -200,8 +200,8 @@ def PlotAllScores(sequence, tfs=[], outOfRange=False, principalOnly=False, margi
             #Limpar plot
             a.gcf().clear()
             #plt.show()
-        else:
-            return fig
+        else:'''
+        return fig
     else:
         print("ERROR: Invalid entry.")
         return None

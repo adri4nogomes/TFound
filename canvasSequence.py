@@ -55,7 +55,7 @@ class canvasSequence():
         self.canvas = Canvas(frame, scrollregion=(0,0,len(self.seq)*width+2*margin,0),bg="white")
         bar=ttk.Scrollbar(frame, orient=HORIZONTAL)
         bar.pack(side=TOP, fill=X)
-        bar.config(command=self.canvas.xview, width=10)
+        bar.config(command=self.canvas.xview)
         self.canvas.config(width=500,height=height+5.5*width+5*width/5)
         self.canvas.config(xscrollcommand=bar.set)
         self.canvas.pack(side=LEFT, expand=True, fill=BOTH)
