@@ -317,7 +317,7 @@ class InterfaceView():
         self.sactree.bind("<ButtonRelease-1>", self._checkItem)
         self.seqtree.bind("<ButtonRelease-1>", self._checkItem)
 
-        self.master.bind( "<Configure>", self._resize)
+        #self.master.bind( "<Configure>", self._resize)
 
         self.seq = None
         self.name = None
