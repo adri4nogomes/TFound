@@ -376,7 +376,7 @@ class InterfaceView():
                     values[0] = "☑" if(tree.item(row)['values'][0].encode("utf-8")==b'\xe2\x98\x90') else "☐"
                     tree.item(row, values=values)
 
-                    genes.loc[genes['gene']==str(values[1]), 'check']=True#if(values[0]=="☑") else False
+                    genes.loc[genes['gene']==str(values[1]), 'check']=True if(values[0]=="☑") else False
                     genesTemp.loc[genesTemp['gene']==str(values[1]), 'check']=True if(values[0]=="☑") else False
                     total = len(genesTemp.loc[genesTemp['check']==True])
 
